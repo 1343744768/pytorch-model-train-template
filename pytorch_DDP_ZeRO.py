@@ -12,12 +12,14 @@ import time
 import random
 import numpy as np
 from torch.utils.data.distributed import DistributedSampler
+from torch.distributed.optim import ZeroRedundancyOptimizer
 
 os.environ["TORCH_HOME"] = "./pretrained_models"
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--cfg", default="./config/classifier_cifar10.yaml", type=str, help="data file path")
 parser.add_argument("--local_rank", type=int, default=-1)
+parser.add_argument("--use_zero", action="store_true")
 args = parser.parse_args()
 
 
@@ -90,7 +92,18 @@ print("train: {}, test: {}, classes: {}".format(len(train_data_loader), len(test
 
 model = torchvision.models.resnet50(weights=torchvision.models.ResNet50_Weights.IMAGENET1K_V1).cuda()
 model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[args.local_rank], output_device=args.local_rank)
-optimizer = torch.optim.SGD(model.parameters(), lr=lr, weight_decay=weight_decay)
+# optimizer = torch.optim.SGD(model.parameters(), lr=lr, weight_decay=weight_decay)
+if args.use_zero:
+    optimizer = ZeroRedundancyOptimizer(
+        model.parameters(),
+        optimizer_class=torch.optim.Adam,
+        lr=lr,
+        weight_decay=weight_decay
+    )
+else:
+    optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
+# print(optimizer)
+
 loss = torch.nn.CrossEntropyLoss()
 lr_scheduler = get_cosine_schedule_with_warmup(optimizer, num_warmup_steps=10,
                                                num_training_steps=len(train_data_loader) * num_epoches)
@@ -116,8 +129,10 @@ for epoch in range(num_epoches):
     cifar10_train_sampler.set_epoch(epoch)
 
     for batch_idx, (X, y) in enumerate(train_data_loader):
-        lr_decay_list.append(optimizer.state_dict()["param_groups"][0]["lr"])
-        # print(lr_decay_list)
+        # if args.use_zero:
+        #     optimizer.consolidate_state_dict(to=0)
+        # if args.local_rank == 0:
+        #     lr_decay_list.append(optimizer.state_dict()["param_groups"][0]["lr"])
 
         X = X.cuda()
         y = y.cuda()

@@ -362,6 +362,18 @@ accelerate launch --config_file ./config/default_FSDP.yml accelerate_FSDP.py
 
 ---
 
+### **Pytorch + DDP + ZeRO（Zero Redundancy Optimizer）**
+
+* 代码文件：pytorch_DDP_ZeRO.py
+* 单卡显存占用：3.18 G
+* 单卡GPU使用率峰值：99%
+* 训练时长（5 epoch）：596 s
+* 训练结果：准确率95%左右
+
+![](./results/pytorch_DDP_ZeRO.jpg)
+
+---
+
 ### **Pytorch + DeepSpeed（环境没搞起来，哈哈哈）**
 
 [[BUG] error: unrecognized arguments: --deepspeed ./ds_config.json #3961](https://github.com/microsoft/DeepSpeed/issues/3961)
