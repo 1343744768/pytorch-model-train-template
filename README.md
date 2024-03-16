@@ -372,9 +372,16 @@ accelerate launch --config_file ./config/default_FSDP.yml accelerate_FSDP.py
 
 ![](./results/pytorch_DDP_ZeRO.jpg)
 
+* 代码启动命令（单机 4 GPU）
+
+```
+python -m torch.distributed.launch --nproc_per_node=4 --nnodes=1 pytorch_DDP_ZeRO.py --use_zero    
+
+```
+
 ---
 
-### **Pytorch + DeepSpeed（环境没搞起来，哈哈哈）**
+### **Pytorch + DeepSpeed（环境还没搞起来，哈哈哈）**
 
 [[BUG] error: unrecognized arguments: --deepspeed ./ds_config.json #3961](https://github.com/microsoft/DeepSpeed/issues/3961)
 
@@ -397,7 +404,7 @@ deepspeed pytorch_DeepSpeed.py --deepspeed_config ./config/zero_stage2_config.js
 
 ---
 
-### **基于accelerate的 DeepSpeed（环境没搞起来，哈哈哈）**
+### **基于accelerate的 DeepSpeed（环境还没搞起来，哈哈哈）**
 
 [DeepSpeed介绍](https://zhuanlan.zhihu.com/p/624412809)
 
